@@ -14,3 +14,8 @@ blood pressure, cholesterol, glucose) and also some subjective features
 like whether the patient smoking or not, take alcohol or not, does the 
 patient do exercise.
 
+Library Install: 
+Use docker build . -t 611, preinstall all the libraries
+
+RUN Docker:
+docker run -v "$(pwd)":/home/rstudio/work -e PASSWORD=hello -p 8787:8787 -it 611
