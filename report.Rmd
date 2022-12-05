@@ -1,0 +1,66 @@
+# Prediction of Cardiovascular Disease 
+
+## Introduction
+
+Cardiovascular Disease(CVDs) are the leading cause of death globally, taking an estimated 17.9 million lives each year. CVDs are a group of disorders of the heart and blood vessels and include coronary heart disease, cerebrovascular disease, rheumatic heart disease and other conditions. It is really helpful if CVDs can be predicted since there are usually hard to be diagnosed before things turns to be really seriously. So my project intends to build some machine learning models to predict if a person will have cardiovascular or not. The target is to see the presence or absence of cardiovascular disease. I tried three models(logistics regression, Naive Bayes and decision tree) to see which can get the highest accuracy of prediction. The data set I choose has 70,000 patients' information with 12 features include objective features like weight, height, age and gender, examination features include systolic blood pressure, diastolic blood pressure, cholesterol, glucose) and also some subjective features like whether the patient smoking or not, take alcohol or not, does the patient do exercise.
+
+## Data Prepocessing
+
+#### Remove missing data and duplicate data
+
+Firstly, I want to check if there are any null data in this data set, also is there any data looks extremely unusual, for example in these 12 features Cholesterol and Glucose can only have three results in the data set, like 1 is normal, 2 is above normal and 3 is well above normal, if there are numbers except 1,2 or 3 appear, it might need to be deleted. The good thing is there is no null data and all the data are in the normal range. Secondly, I checked if there are ant duplicated data, the reason why I want to check this is because if duplicated data are sent to the training model, these data will dominate the whole model and will effect the accuracy of prediction. After doing these two steps, there are still 70,000 patients' information left.
+
+#### Normalize data
+![Age and Weight Range](./figures/boxplot_age_weight.png){width=50%} 
+
+The figure(figure 1) is a box plot about the distribution of age and weight.I randomly picked two continuous features and see do they have the similar range, I found the ranges are quite different since in this data set under age feature days after birth are used so the numbers are really large but the numbers under weight are mostly two digits numbers, therefore I think I need to scaled and normalized the data to make the numbers under age, weight, height, systolic blood pressure and diastolic blood pressure in the range of -1 and 1.
+
+
+
+#### Deal with data including both discrete and constant features
+
+By looking through all the features, I noticed that 1 and 2 are used to describe gender, in our common sense 1 is less than 2, but during training process we cannot say female is less than male or male is less than female. Therefore, I did the one hot encoding to change 1 as 1,0 and 2 as 0,1, so that there is not any greater or less than in gender, female and male are all represented by 0 and 1.
+
+## Feature Engineer
+
+The data set now is really clean with no null data, no duplicated data, all the continuous data are normalized and gender feature already do the one hot encoding.
+
+#### Remove the uncessary column
+
+I think the first column which is the id number is unnecessary for my training model, so I deleted this column.
+
+#### Check if this is balanced data
+![balanced data](./figures/check_balance.png){width=50%}
+
+My next step is to check whether the data set is balanced or not,like the numbers of 0 and 1 in cardio, represent the presence or absence of cardiovascular disease. The reason why I want to check this is because if there is only a few 0 in cardio all the others are 1, I think it might have influence for the final prediction because I don't have enough data to let the program know which figures will lead a absence of cardiovascular disease. So I plot a histogram graph(Figure 2) and found the number of 0 and 1 looks exactly the same. Also I did count the number of 0 and 1 under cardio feature, there are 35003 0s and 34997 1s, almost half and half. So I think this data is really balance.
+
+
+
+
+#### Check the correlation between features and remove the duplicated features.
+![correlation](./figures/features_corr.png){width=60%}
+
+![cholesterol_vs_cardio](./figures/cholesterol_vs_cardio.png){width=50%}
+
+I want to check if there is correlation between features because Correlation between features can verify which features are redundant (high correlation between features.) also Correlation between each feature and label can identify which feature is highly correlated with the label and will be potentially important in the model training. For example, if there are two columns about height one has unit cm and one has unit m, the higher the numbers are in the column with unit of cm will also higher in the column with unit of m. I need to delete one of these two columns. I plotted a correlation graph(Figure 3), all the pie plots on the diagonal are fulled filled with dark blue is because every features is positive correlation with itself, the pie plots between gender_1 and gender_2 are fully dark red with negative correlation also make sense because in out data set there are only female and male under gender so in this data set if one is not female, he should be a male, so it should be opposite. Looking at the last row which is the correlation between cardio and all the features, I noticed cardio seems to only have correlation between age, weight and cholesterol, because under all the other features, there are not significantly pie graphs.
+
+
+
+Because from the features correlation pie graph there is relation between cholesterol and cardio so I used a barplot to double check the correlation between cholesterol and cardio. The barplot(Figure 4) show that when poeple have normal cholesterol level, it is more likely about the absence of cardiovascular disease, but if someone's cholesterol level above normal or well above normal, they will have higher possibility to have CVDs, the higher the cholesterol level is the higher risk of cardiovascular diseases.
+
+
+## Build and Train the Model
+![Decision Tree](./figures/Decision_Tree.png){width=50%}
+
+Since the correlation graph only shows there are correlation between cardio and age, weight and cholesterol, so in the following training models I only use these three features. Also totally I have 70,000 information, I separate the whole data set to two groups, 70% in training groups and 30% in testing groups, use the model trainined by the training group data to predict the result in testing group and compare it with my real testing group data. I picked three most popular machine training models(logistic regression, naive Bayes and decision tree) and I want to see which one can get the most accuracy results for prediction. 
+
+The decision tree plot displays the model trained on our data and reflect the path to decide whether the patient will got cardiovascular disease or not by each training feature, the top one which is the cholesterol stands for the feature that can bring the least entropy (or most information gain), left and right branches stand for if we have a cholesterol threshold to be 2 to decide whether or not have the disease, 75% samples with cholesterol less than 2 are classified as no and 25% samples with cholesterol larger than 2 are classified as yes. Based on the actual labels, we calculate an average of the samples on both sides and the result shows how far our classification results are away from the truth, e.g,, on the left side the average should be ideally 0 but we got 0.44, which means some of the data with actual label 1 are classified as 0. Then on the second level, we kept splitting the tree with other feature which is age, this is how we read the tree plot and decide the label alongside the path.
+
+
+
+## Evaluation and Result
+![age_vs_cardio](./figures/age_vs_cardio.png){width=50%}
+
+Using logistic regression I got accuracy is 64%, using decision tree I got 62% and using naive Bayes I got misclassification is around 38% Training model accuracy is around 62% not bad. All of these three models are around 60%-65% which is not bad but also not that good. I think one of the reasons are because I only used some main correlation features in my training. Actually I tried to use all features first, but the result I got is even worse, so that the reason why I only picked three main correlation features. I probably need to include more features like Glucose and blood pressure because in the pie plots it shows some correlation between these features and cardiovascular diseases. I plotted a graph about the relation between age and cardio, which shows after age 53, the risk of getting CVDs is getting higher. From my model like logistic regression the coefficients of age, weight and cholesterol are 0.45, 0.33 and 0.58 which make sense to me, that cholesterol weight and age are the most serious problem cause the CVDs. In a word, for preventing from getting cardiovascular disease, someone should maintain a healthy weight and control cholesterol level. I searched several ways from website that can help to control cholesterol level, which are eat health food,exercise on most days of the week and increase your physical activity and quit smoking.
+
+
